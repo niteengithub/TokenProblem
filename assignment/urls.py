@@ -19,6 +19,7 @@ from tokenGenerator import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', views.home, name='home'),
     path('generateToken/', views.GenerateUniqueToken.as_view(), name='generateToken'),
     path('assignToken/', views.AssignUniqueToken.as_view(), name='assignToken'),
     path('unblockToken/', views.UnblockToken.as_view(), name='unblockToken'),

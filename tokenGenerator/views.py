@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -18,8 +19,14 @@ def delete_token(token):
 
 
 def unblock_token(token):
-    pool_dict[token] = ['NA', time.time()]
-    pool_list.append(token)
+    try:
+        temp_token = pool_dict[token]
+        pool_dict[token] = ['NA', time.time()]
+        pool_list.append(token)
+    except Exception as ex:
+        return 'Invalid'
+
+    return {token: pool_dict[token]}
 
 
 class GenerateUniqueToken(APIView):
@@ -57,9 +64,12 @@ class UnblockToken(APIView):
             if 'token' in request.data:
                 selected_token = request.data['token']
 
-                unblock_token(selected_token)
+                unblocked_token = unblock_token(selected_token)
 
-            return Response('UnblockToken')
+                if unblocked_token == 'Invalid':
+                    return Response('Invalid Token!', status=status.HTTP_404_NOT_FOUND)
+
+                return Response(unblocked_token)
 
         except Exception as ex:
             return Response(str(ex))
@@ -89,6 +99,8 @@ class DeleteToken(APIView):
 class KeepTokenAlive(APIView):
     def get(self, request):
         try:
+            if len(pool_list) == 0:
+                return Response(status=status.HTTP_404_NOT_FOUND)
             selected_token = random.choice(pool_list)
 
             return Response('KeepTokenAlive')
@@ -113,3 +125,10 @@ def check_token_status():
 
 
 threading.Thread(target=check_token_status).start()
+
+
+def home(request):
+    try:
+        return HttpResponse('<h1>Welcome to Token Problem</h1>')
+    except Exception as ex:
+        return HttpResponse('')
