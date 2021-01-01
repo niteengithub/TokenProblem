@@ -1,0 +1,1 @@
+web: gnicorn assignment.wsgi --log-file -
