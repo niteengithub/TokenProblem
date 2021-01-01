@@ -51,8 +51,8 @@ class AssignUniqueToken(APIView):
         try:
             selected_token = random.choice(pool_list)
 
-            pool_dict[selected_token] = ['A', time.time()]
             pool_list.remove(selected_token)
+            pool_dict[selected_token] = ['A', time.time()]
 
             return Response(pool_dict)
 
@@ -103,9 +103,17 @@ class KeepTokenAlive(APIView):
         try:
             if len(pool_list) == 0:
                 return Response(status=status.HTTP_404_NOT_FOUND)
-            selected_token = random.choice(pool_list)
 
-            return Response('KeepTokenAlive')
+            if 'token' in request.data:
+                selected_token = request.data['token']
+
+                try:
+                    temp_token = pool_dict[selected_token]
+                    pool_dict[selected_token][1] = time.time()
+                except KeyError as ex:
+                    return Response('Invalid Token!', status=status.HTTP_404_NOT_FOUND)
+
+                return Response('Kept Token Alive')
 
         except Exception as ex:
             return Response(str(ex))
@@ -116,9 +124,9 @@ def check_token_status():
         try:
             if len(pool_list) != 0:
                 for pool_list_elem in pool_list:
-                    if time.time() - pool_dict[pool_list_elem][1] > 60:
+                    if time.time() - pool_dict[pool_list_elem][1] > 20:
                         unblock_token(pool_list_elem)
-                    if time.time() - pool_dict[pool_list_elem][1] > 300:
+                    if time.time() - pool_dict[pool_list_elem][1] > 60:
                         delete_token(pool_list_elem)
         except Exception as ex:
             pass
