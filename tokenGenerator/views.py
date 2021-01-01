@@ -124,9 +124,9 @@ def check_token_status():
         try:
             if len(list(pool_dict.keys())) != 0:
                 for pool_dict_key in pool_dict.keys():
-                    if pool_dict[pool_dict_key][0] == 'A' and time.time() - pool_dict[pool_dict_key][1] > 20:
+                    if pool_dict[pool_dict_key][0] == 'A' and time.time() - pool_dict[pool_dict_key][1] > 60:
                         unblock_token(pool_dict_key)
-                    if time.time() - pool_dict[pool_dict_key][1] > 60:
+                    if time.time() - pool_dict[pool_dict_key][1] > 300:
                         delete_token(pool_dict_key)
         except Exception as ex:
             pass
