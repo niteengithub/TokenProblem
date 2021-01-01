@@ -14,18 +14,18 @@ pool_dict = dict()
 
 
 def delete_token(token):
-    del pool_dict[token]
     pool_list.remove(token)
+    del pool_dict[token]
 
 
 def unblock_token(token):
     try:
         temp_token = pool_dict[token]
         if temp_token[0] == 'A':
-            pool_dict[token] = ['NA', time.time()]
+            pool_dict[token][0] = 'NA'
             pool_list.append(token)
 
-            return {token: pool_dict[token]}
+            return {'Unblocked Token': token}
 
     except KeyError as ex:
         return 'Invalid'
@@ -40,7 +40,7 @@ class GenerateUniqueToken(APIView):
 
             pool_dict[unique_token] = ['NA', time.time()]
 
-            return Response(pool_dict)
+            return Response({'Token Created': unique_token})
 
         except Exception as ex:
             return Response(str(ex))
@@ -54,7 +54,7 @@ class AssignUniqueToken(APIView):
             pool_list.remove(selected_token)
             pool_dict[selected_token] = ['A', time.time()]
 
-            return Response(pool_dict)
+            return Response({'Token Assigned': selected_token})
 
         except Exception as ex:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -92,7 +92,7 @@ class DeleteToken(APIView):
                 except KeyError as ex:
                     return Response('Invalid Token!', status=status.HTTP_404_NOT_FOUND)
 
-            return Response('Token Deleted!')
+                return Response({'Deleted Token': selected_token})
 
         except Exception as ex:
             return Response(str(ex))
@@ -113,7 +113,7 @@ class KeepTokenAlive(APIView):
                 except KeyError as ex:
                     return Response('Invalid Token!', status=status.HTTP_404_NOT_FOUND)
 
-                return Response('Kept Token Alive')
+                return Response({'Token Kept Alive': selected_token})
 
         except Exception as ex:
             return Response(str(ex))
@@ -122,12 +122,12 @@ class KeepTokenAlive(APIView):
 def check_token_status():
     while True:
         try:
-            if len(pool_list) != 0:
-                for pool_list_elem in pool_list:
-                    if time.time() - pool_dict[pool_list_elem][1] > 20:
-                        unblock_token(pool_list_elem)
-                    if time.time() - pool_dict[pool_list_elem][1] > 60:
-                        delete_token(pool_list_elem)
+            if len(list(pool_dict.keys())) != 0:
+                for pool_dict_key in pool_dict.keys():
+                    if pool_dict[pool_dict_key][0] == 'A' and time.time() - pool_dict[pool_dict_key][1] > 20:
+                        unblock_token(pool_dict_key)
+                    if time.time() - pool_dict[pool_dict_key][1] > 60:
+                        delete_token(pool_dict_key)
         except Exception as ex:
             pass
 
