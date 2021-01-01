@@ -21,12 +21,14 @@ def delete_token(token):
 def unblock_token(token):
     try:
         temp_token = pool_dict[token]
-        pool_dict[token] = ['NA', time.time()]
-        pool_list.append(token)
-    except Exception as ex:
-        return 'Invalid'
+        if temp_token[0] == 'A':
+            pool_dict[token] = ['NA', time.time()]
+            pool_list.append(token)
 
-    return {token: pool_dict[token]}
+            return {token: pool_dict[token]}
+
+    except KeyError as ex:
+        return 'Invalid'
 
 
 class GenerateUniqueToken(APIView):
@@ -82,13 +84,13 @@ class DeleteToken(APIView):
                 selected_token = request.data['token']
 
                 try:
-                    pool_list.remove(selected_token)
-                except ValueError as ex:
-                    return Response('Invalid Token!', status=status.HTTP_404_NOT_FOUND)
-                try:
-                    del pool_dict[selected_token]
+                    if pool_dict[selected_token][0] == 'NA':
+                        del pool_dict[selected_token]
+                        pool_list.remove(selected_token)
+                    else:
+                        del pool_dict[selected_token]
                 except KeyError as ex:
-                    return Response('Token Deleted!')
+                    return Response('Invalid Token!', status=status.HTTP_404_NOT_FOUND)
 
             return Response('Token Deleted!')
 
@@ -115,10 +117,8 @@ def check_token_status():
             if len(pool_list) != 0:
                 for pool_list_elem in pool_list:
                     if time.time() - pool_dict[pool_list_elem][1] > 60:
-                        print('unblock_token : ', pool_list_elem)
                         unblock_token(pool_list_elem)
                     if time.time() - pool_dict[pool_list_elem][1] > 300:
-                        print('delete_token : ', pool_list_elem)
                         delete_token(pool_list_elem)
         except Exception as ex:
             pass
