@@ -40,7 +40,7 @@ class GenerateUniqueToken(APIView):
 
             pool_dict[unique_token] = ['NA', time.time()]
 
-            return Response({'Token Created': unique_token})
+            return Response({'Created Token': unique_token})
 
         except Exception as ex:
             return Response(str(ex))
@@ -54,7 +54,7 @@ class AssignUniqueToken(APIView):
             pool_list.remove(selected_token)
             pool_dict[selected_token] = ['A', time.time()]
 
-            return Response({'Token Assigned': selected_token})
+            return Response({'Assigned Token': selected_token})
 
         except Exception as ex:
             return Response(status=status.HTTP_404_NOT_FOUND)
